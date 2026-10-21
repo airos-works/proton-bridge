@@ -6,16 +6,17 @@ implementation remain the basis of the port.
 
 ## Installed validation build
 
-The x86_64 package `proton_bridge-3.27.1~airos1792544465-1-x86_64.hpkg` is installed
-on the Framework laptop through MCP. It was built from `b9d5997b`, with core-image
-integration committed in `jmgasper/airos-ci` at `a3f6dd3`. Its SHA-256 is
-`b433121ed69613203780840dd28d229ff0532cc5abbbab81eaa96bdd2efcebc8`.
+The x86_64 package `proton_bridge-3.27.1~airos1792553560-1-x86_64.hpkg` is installed
+on the Framework laptop through MCP. It was built from `32c34ae6`, with core-image
+integration committed in `jmgasper/airos-ci` at `bb0f144`. Its SHA-256 is
+`77d23aa1f6c95a6ab0676ab775026c9bd012319958f069d5c806bd6803986b4c`.
 
 The native key store requires first-use authorization for the installed engine
 at `/boot/system/apps/ProtonMailBridge/bridge`. Authorization granted to the
 previous development path does not carry over. If startup waits at the key-store
 dialog, allow the installed Bridge to read its vault key. No insecure fallback
-is used. Packaged GUI validation is awaiting that authorization.
+is used. Authorization has been granted on the validation laptop, and the
+installed GUI successfully connected to the engine after the package update.
 
 Implemented so far:
 
@@ -165,6 +166,13 @@ Further desktop checks passed: killing the GUI caused the engine to shut down,
 the native autostart helper launched the GUI/engine with `--no-window`, and a
 second launcher invocation raised the existing window. A successful focus now
 returns success instead of being logged as a launch failure.
+
+The updated installed package was checked against the live application roster:
+one foreground application named `Proton Mail Bridge`, with the engine marked
+as a background application. The launcher and engine both have native app flags
+`0x5` (`B_MULTIPLE_LAUNCH | B_BACKGROUND_APP`), and the GUI has flags `0x1`.
+A Deskbar screenshot confirmed the single entry. Launching again from the
+Applications menu returned success and kept the same GUI and engine teams.
 
 ### Validation steps
 
