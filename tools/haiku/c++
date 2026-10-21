@@ -1,0 +1,2 @@
+#!/bin/sh
+exec "${HAIKU_CROSS:?source tools/haiku/env.sh}-g++" --sysroot="${HAIKU_SYSROOT:?}" "$@"

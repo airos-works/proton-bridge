@@ -84,6 +84,11 @@ func newVault(reporter *sentry.Reporter, locations *locations.Locations, keychai
 	)
 
 	if key, helper, err := loadVaultKey(vaultDir, keychains, featureFlags); err != nil {
+		// air/OS requires the system key store. Never open an insecure vault
+		// when it is locked, access is denied, or the service is unavailable.
+		if runtime.GOOS == platform.HAIKU {
+			return nil, false, nil, fmt.Errorf("air/OS system key store is required: %w", err)
+		}
 		if errors.Is(err, keychain.ErrPreferredKeychainNotAvailable) {
 			if err := vault.IncrementKeychainFailedAttemptCount(vaultDir); err != nil {
 				logrus.WithError(err).Error("Failed to increment failed keychain attempt count")
@@ -193,6 +198,12 @@ func loadVaultKey(vaultDir string, keychains *keychain.List, featureFlags unleas
 	key, err = vault.GetVaultKey(kc)
 	if err != nil {
 		if keychain.IsErrKeychainNoItem(err) {
+			if runtime.GOOS == platform.HAIKU {
+				// A missing key must not silently destroy an existing encrypted vault.
+				if _, statErr := os.Stat(path.Join(vaultDir, "vault.enc")); !errors.Is(statErr, fs.ErrNotExist) {
+					return nil, keychainHelper, errors.New("vault key missing for existing air/OS vault; restore key store access before retrying")
+				}
+			}
 			logrus.WithError(err).Warn("no vault key found, generating new")
 			key, err := vault.NewVaultKey(kc)
 			return key, keychainHelper, err

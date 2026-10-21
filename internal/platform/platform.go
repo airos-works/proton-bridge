@@ -20,5 +20,6 @@ package platform
 const (
 	MACOS   = "darwin"
 	LINUX   = "linux"
+	HAIKU   = "haiku"
 	WINDOWS = "windows"
 )

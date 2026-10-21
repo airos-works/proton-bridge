@@ -39,17 +39,7 @@ type DefaultProvider struct {
 }
 
 func NewDefaultProvider(name string) (*DefaultProvider, error) {
-	config, err := os.UserConfigDir()
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := userDataDir()
-	if err != nil {
-		return nil, err
-	}
-
-	cache, err := os.UserCacheDir()
+	config, data, cache, err := defaultUserDirs()
 	if err != nil {
 		return nil, err
 	}
