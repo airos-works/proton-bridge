@@ -11,6 +11,11 @@ on the Framework laptop through MCP. It was built from `32c34ae6`, with core-ima
 integration committed in `jmgasper/airos-ci` at `bb0f144`. Its SHA-256 is
 `77d23aa1f6c95a6ab0676ab775026c9bd012319958f069d5c806bd6803986b4c`.
 
+The laptop also has `qt6_base-6.10.3-104`, which fixes duplicate Deskbar tray
+icons in the shared Haiku Qt plugin. Core images include this fix through
+`jmgasper/airos-ci` commit `44af33b`, pinning `jmgasper/qt6-haikuplugins` at
+`58ec975`.
+
 The native key store requires first-use authorization for the installed engine
 at `/boot/system/apps/ProtonMailBridge/bridge`. Authorization granted to the
 previous development path does not carry over. If startup waits at the key-store
@@ -173,6 +178,20 @@ as a background application. The launcher and engine both have native app flags
 `0x5` (`B_MULTIPLE_LAUNCH | B_BACKGROUND_APP`), and the GUI has flags `0x1`.
 A Deskbar screenshot confirmed the single entry. Launching again from the
 Applications menu returned success and kept the same GUI and engine teams.
+
+### Tray icon lifecycle
+
+A later check found 196 stale tray icons belonging to one GUI process. The Qt
+platform plugin discarded its existing tray ID after missing heartbeat replies
+and created another icon every six seconds. The shared Qt fix reconnects to the
+existing owned icon, recreates it only when absent, and cleans up both message
+timers and queued message copies. Stopping the old GUI cleared its stale icons.
+
+Native regression tests in the Qt fork exercise ordinary operation, deliberately
+dropped heartbeats, and removal of the test's own tray icon. Each runs for 20
+seconds and checks ten hide/show cycles. The old plugin grew from one to four
+icons under dropped heartbeats; the installed fix kept one, recovered a removed
+icon once, and left zero after hide. All three tests passed on the laptop.
 
 ### Validation steps
 
