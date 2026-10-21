@@ -191,7 +191,7 @@ bool isBridgeRunning() {
 //****************************************************************************************************************************************************
 /// \brief Use api to bring focus on existing bridge instance.
 //****************************************************************************************************************************************************
-void focusOtherInstance() {
+bool focusOtherInstance() {
     try {
         FocusGRPCClient client(app().log());
         GRPCConfig sc;
@@ -212,10 +212,12 @@ void focusOtherInstance() {
         if (!client.raise("focusOtherInstance").ok()) {
             throw Exception(QString("The raise call to the bridge focus service failed."));
         }
+        return true;
     } catch (Exception const &e) {
         app().log().error(e.qwhat());
         auto uuid = reportSentryException("Exception occurred during focusOtherInstance()", e);
         app().log().fatal(QString("reportID: %1 Captured exception: %2").arg(uuid, e.qwhat()));
+        return false;
     }
 }
 
@@ -296,8 +298,7 @@ int main(int argc, char *argv[]) {
 
         QLockFile lock(bridgepp::userCacheDir() + "/" + bridgeGUILock);
         if (!checkSingleInstance(lock)) {
-            focusOtherInstance();
-            return EXIT_FAILURE;
+            return focusOtherInstance() ? EXIT_SUCCESS : EXIT_FAILURE;
         }
 
 #ifdef Q_OS_MACOS

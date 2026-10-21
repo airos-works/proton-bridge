@@ -6,8 +6,8 @@ implementation remain the basis of the port.
 
 ## Work in progress
 
-The engine builds and runs on the laptop. The desktop application and installable
-package are not yet ready for user validation. Implemented so far:
+The engine and Qt desktop run on the laptop. An installable package has been
+built through air/OS CI; final package validation is in progress. Implemented so far:
 
 - Native BKeyStore credential helper with service isolation, retrieval, listing,
   replacement and deletion. The key store controls application authorization.
@@ -98,13 +98,14 @@ The test executables are in `/boot/home/proton-bridge-port-tests` on the laptop.
 They are development artifacts, not the requested final packaged installation.
 The headless smoke-test process was stopped normally after checking its services.
 
-### Core-build integration work remaining
+### Core-build integration
 
-The current core image pipeline is `jmgasper/airos-ci` (local checkout
-`/mnt/HaikuWork/src/airos-ci`): `apps/build-app-packages.sh` builds app packages,
-`apps/ci-build-app.sh` adds them to the architecture package pool, and
-`images/build-image.sh` selects the core image apps in `IMAGE_APPS`.
-Add Bridge there once the desktop package and its dependencies are built. The GUI now uses native paths and system libraries.
+The core image pipeline is `jmgasper/airos-ci`. Its `proton_bridge` app target
+builds a native hpkg with Qt/gRPC package requirements, a `proton-bridge` command
+and a “Proton Mail Bridge” Applications menu entry. The x86_64 image builder
+builds a reviewed commit from `apps/bridge.lock.json` through `build-pinned.sh`.
+The pin must be reachable from this fork's `master`; its provenance is saved
+in the image manifest. ARM64 image builds do not include Bridge yet.
 
 ### Desktop milestone
 
@@ -118,7 +119,8 @@ The default renderer on air/OS is Qt Quick software rendering.
 - `tools/haiku/build-host-tools.sh` downloads checksum-pinned sources and builds
   Linux moc/rcc/protoc/grpc_cpp_plugin. It and `build-gui.sh` were exercised from
   a fresh GUI build directory. No target executable runs on the Linux host.
-- `tools/haiku/build-go-toolchain.sh` bootstraps the pinned Haiku Go branch for CI.
+- `tools/haiku/build-go-toolchain.sh` bootstraps the pinned Haiku Go branch for CI;
+  a clean bootstrap completed successfully on the Linux host.
 - The native process provider enumerates teams and resolves executable paths.
   All launcher tests passed on the laptop, including self/parent PID, executable
   identity, CPU/user queries, invalid PID, and ignoring self-update directories.
@@ -143,3 +145,8 @@ The dependency prefix must contain the runtime and development packages for
 `qt6_base`, `qt6_declarative`, `qt6_svg`, `grpc`, `protobuf`, and their dependencies.
 The build supports x86_64 currently; equivalent desktop dependencies are not
 available in the air/OS ARM64 package set yet.
+
+Further desktop checks passed: killing the GUI caused the engine to shut down,
+the native autostart helper launched the GUI/engine with `--no-window`, and a
+second launcher invocation raised the existing window. A successful focus now
+returns success instead of being logged as a launch failure.

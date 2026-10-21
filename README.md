@@ -1,3 +1,6 @@
+> **air/OS port:** This fork adds native system key-store integration and a Qt
+> desktop build for x86_64 air/OS. See [port status and build instructions](docs/haiku/README.md).
+
 # Proton Mail Bridge
 Copyright (c) 2026 Proton AG
 

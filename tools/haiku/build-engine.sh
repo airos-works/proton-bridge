@@ -14,7 +14,7 @@ version=${BRIDGE_APP_VERSION:-$(utils/bridge_app_version.sh)}
 revision=${BRIDGE_REVISION:-$(git describe --always --dirty --match "")}
 prefix=github.com/ProtonMail/proton-bridge/v3/internal/constants
 ldflags="-X $prefix.Version=$version -X $prefix.Revision=$revision -X $prefix.BuildEnv=dev -X '$prefix.FullAppName=Proton Mail Bridge'"
-go build -trimpath -ldflags "$ldflags" -o "$OUT/bridge" ./cmd/Desktop-Bridge
-go build -trimpath -ldflags "$ldflags" -o "$OUT/launcher" ./cmd/launcher
+go build -p "${JOBS:-8}" -trimpath -ldflags "$ldflags" -o "$OUT/bridge" ./cmd/Desktop-Bridge
+go build -p "${JOBS:-8}" -trimpath -ldflags "$ldflags" -o "$OUT/launcher" ./cmd/launcher
 "${CXX:-g++}" -std=c++17 -Wall -Wextra -Werror dist/haiku/autostart.cpp -lbe -o "$OUT/bridge-autostart"
 printf 'Built engine, launcher and autostart helper in %s\n' "$OUT"
