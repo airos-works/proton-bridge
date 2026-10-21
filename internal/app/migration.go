@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ import (
 	"github.com/ProtonMail/proton-bridge/v3/internal/legacy/credentials"
 	"github.com/ProtonMail/proton-bridge/v3/internal/locations"
 	"github.com/ProtonMail/proton-bridge/v3/internal/logging"
+	"github.com/ProtonMail/proton-bridge/v3/internal/platform"
 	"github.com/ProtonMail/proton-bridge/v3/internal/updater"
 	"github.com/ProtonMail/proton-bridge/v3/internal/vault"
 	"github.com/ProtonMail/proton-bridge/v3/pkg/algo"
@@ -43,6 +45,10 @@ import (
 
 // nolint:gosec
 func migrateKeychainHelper(locations *locations.Locations) error {
+	// There were no v1/v2 installations on air/OS. Do not migrate Linux paths.
+	if runtime.GOOS == platform.HAIKU {
+		return nil
+	}
 	logrus.Trace("Checking if keychain helper needs to be migrated")
 
 	settings, err := locations.ProvideSettingsPath()
@@ -84,6 +90,10 @@ func migrateKeychainHelper(locations *locations.Locations) error {
 
 // nolint:gosec
 func migrateOldSettings(v *vault.Vault) error {
+	// There were no v1/v2 installations on air/OS. Do not migrate Linux paths.
+	if runtime.GOOS == platform.HAIKU {
+		return nil
+	}
 	logrus.Info("Migrating settings")
 
 	configDir, err := os.UserConfigDir()
@@ -127,6 +137,10 @@ func migrateOldSettingsWithDir(configDir string, v *vault.Vault) error {
 }
 
 func migrateOldAccounts(locations *locations.Locations, keychains *keychain.List, v *vault.Vault) error {
+	// There were no v1/v2 installations on air/OS. Do not migrate Linux paths.
+	if runtime.GOOS == platform.HAIKU {
+		return nil
+	}
 	logrus.Info("Migrating accounts")
 
 	settings, err := locations.ProvideSettingsPath()
@@ -307,6 +321,10 @@ func migratePrefsToVault(vault *vault.Vault, b []byte) error {
 }
 
 func migrateOldVersions() (allErrors error) {
+	// There were no v1/v2 installations on air/OS. Do not migrate Linux paths.
+	if runtime.GOOS == platform.HAIKU {
+		return nil
+	}
 	cacheDir, cacheError := os.UserCacheDir()
 	if cacheError != nil {
 		allErrors = multierror.Append(allErrors, errors.Wrap(cacheError, "cannot get os cache"))

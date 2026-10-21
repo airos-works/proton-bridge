@@ -24,7 +24,6 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/ProtonMail/gluon/imap"
-	"github.com/ProtonMail/go-autostart"
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/ProtonMail/proton-bridge/v3/internal/bridge"
 	"github.com/ProtonMail/proton-bridge/v3/internal/constants"
@@ -133,15 +132,6 @@ func withBridge(
 	return fn(bridge, eventCh)
 }
 
-func newAutostarter(exe string) *autostart.App {
-	logrus.Debug("Creating autostarter")
-
-	return &autostart.App{
-		Name:        constants.FullAppName,
-		DisplayName: constants.FullAppName,
-		Exec:        []string{exe, "--" + flagNoWindow},
-	}
-}
 
 func newUpdater(locations *locations.Locations) (*updater.Updater, error) {
 	updatesDir, err := locations.ProvideUpdatesPath()

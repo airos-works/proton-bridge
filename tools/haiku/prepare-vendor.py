@@ -9,9 +9,9 @@ vendor = root / "vendor"
 def replace(file, before, after):
     path = vendor / file
     text = path.read_text()
-    if before not in text:
-        if after in text:
-            return
+    if after in text:
+        return
+    if text.count(before) != 1:
         raise SystemExit(f"dependency changed, review Haiku patch: {file}")
     path.write_text(text.replace(before, after, 1))
 
@@ -27,6 +27,9 @@ replace("google.golang.org/grpc/internal/tcp_keepalive_unix.go",
 replace("github.com/abiosoft/ishell/utils_unix.go",
         "// +build darwin dragonfly freebsd linux,!appengine netbsd openbsd solaris",
         "// +build darwin dragonfly freebsd linux,!appengine netbsd openbsd solaris haiku")
+replace("github.com/pbnjay/memory/stub.go",
+        "// +build !linux,!darwin,!windows,!freebsd,!dragonfly,!netbsd,!openbsd",
+        "// +build !linux,!darwin,!windows,!freebsd,!dragonfly,!netbsd,!openbsd,!haiku")
 for source in (root / "tools/haiku/overlay").rglob("*"):
     if source.is_file():
         target = vendor / source.relative_to(root / "tools/haiku/overlay")

@@ -19,7 +19,10 @@ package bridge
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/ProtonMail/proton-bridge/v3/internal/platform"
+	"runtime"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/ProtonMail/proton-bridge/v3/internal/kb"
@@ -233,10 +236,19 @@ func (bridge *Bridge) GetUpdateRollout() float64 {
 }
 
 func (bridge *Bridge) GetAutoUpdate() bool {
+	if runtime.GOOS == platform.HAIKU {
+		return false
+	}
 	return bridge.vault.GetAutoUpdate()
 }
 
 func (bridge *Bridge) SetAutoUpdate(autoUpdate bool) error {
+	if runtime.GOOS == platform.HAIKU {
+		if autoUpdate {
+			return errors.New("Bridge updates are managed by air/OS SoftwareUpdater")
+		}
+		return nil
+	}
 	if bridge.vault.GetAutoUpdate() == autoUpdate {
 		return nil
 	}

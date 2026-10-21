@@ -74,6 +74,11 @@ func NewUpdater(ver *versioner.Versioner, verifier *crypto.KeyRing, product, pla
 }
 
 func (u *Updater) GetVersionInfo(ctx context.Context, downloader Downloader) (VersionInfo, error) {
+	if u.platform == platform.HAIKU {
+		// air/OS ships Bridge as a system package. Proton does not publish a
+		// Haiku update feed; never request or install another platform's build.
+		return VersionInfo{}, nil
+	}
 	b, err := downloader.DownloadAndVerify(
 		ctx,
 		u.verifier,
@@ -94,6 +99,9 @@ func (u *Updater) GetVersionInfo(ctx context.Context, downloader Downloader) (Ve
 }
 
 func (u *Updater) InstallUpdate(ctx context.Context, downloader Downloader, release Release, removeTemporaryFolderDisabled bool) error {
+	if u.platform == platform.HAIKU {
+		return errors.New("Bridge updates are managed by air/OS SoftwareUpdater")
+	}
 	if u.installer.IsAlreadyInstalled(release.Version) {
 		return ErrUpdateAlreadyInstalled
 	}
