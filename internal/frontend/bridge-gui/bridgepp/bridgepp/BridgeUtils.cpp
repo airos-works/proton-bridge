@@ -19,6 +19,11 @@
 #include "BridgeUtils.h"
 #include "Exception/Exception.h"
 #include <random>
+#ifdef Q_OS_HAIKU
+#include <FindDirectory.h>
+#include <limits.h>
+#include <sys/stat.h>
+#endif
 
 
 namespace bridgepp {
@@ -28,6 +33,25 @@ namespace {
 
 
 QString const configFolder = "protonmail/bridge-v3";
+#ifdef Q_OS_HAIKU
+QString haikuUserDir(directory_which which) {
+    char path[PATH_MAX];
+    if (find_directory(which, -1, true, path, sizeof(path)) != B_OK) {
+        throw Exception("Could not locate the native user directory.");
+    }
+    QString const folder = QDir(QString::fromLocal8Bit(path)).absoluteFilePath(configFolder);
+    // Match the engine's private directories, including the parent namespace.
+    for (QString const &dir : {QDir(QString::fromLocal8Bit(path)).absoluteFilePath("protonmail"), folder}) {
+        if (mkdir(QFile::encodeName(dir).constData(), 0700) != 0 && errno != EEXIST) {
+            throw Exception("Could not create the native user directory.");
+        }
+    }
+    if (!QDir(folder).exists()) {
+        throw Exception("The native user directory is not a directory.");
+    }
+    return folder;
+}
+#endif
 QMutex rngMutex; ///< the mutex to use when accessing the rng.
 
 QStringList const firstNames {
@@ -69,6 +93,9 @@ std::mt19937_64 &rng() {
 /// \return user configuration directory used by bridge (based on Golang OS/File's UserConfigDir).
 //****************************************************************************************************************************************************
 QString userConfigDir() {
+#ifdef Q_OS_HAIKU
+    return haikuUserDir(B_USER_SETTINGS_DIRECTORY);
+#endif
     QString dir;
 #ifdef Q_OS_WIN
     dir = qEnvironmentVariable("AppData");
@@ -101,6 +128,9 @@ QString userConfigDir() {
 /// \return user cache directory used by bridge (based on Golang OS/File's UserCacheDir).
 //****************************************************************************************************************************************************
 QString userCacheDir() {
+#ifdef Q_OS_HAIKU
+    return haikuUserDir(B_USER_CACHE_DIRECTORY);
+#endif
     QString dir;
 
 #ifdef Q_OS_WIN
@@ -135,6 +165,9 @@ QString userCacheDir() {
 /// \return user data directory used by bridge (based on Golang OS/File's UserDataDir).
 //****************************************************************************************************************************************************
 QString userDataDir() {
+#ifdef Q_OS_HAIKU
+    return haikuUserDir(B_USER_VAR_DIRECTORY);
+#endif
     QString folder;
 
 #ifdef Q_OS_LINUX
@@ -174,6 +207,8 @@ QString goos() {
     return "darwin";
 #elif defined(Q_OS_WINDOWS)
     return "windows";
+#elif defined(Q_OS_HAIKU)
+    return "haiku";
 #else
     return "linux";
 #endif
@@ -245,6 +280,9 @@ SPUser defaultUser() {
 /// \return The OS the application is running on.
 //****************************************************************************************************************************************************
 OS os() {
+#ifdef Q_OS_HAIKU
+    return OS::Haiku;
+#endif
     QString const osStr = QSysInfo::productType();
     if ((osStr == "macos") || (osStr == "osx")) { // Qt < 5 returns "osx", Qt6 returns "macos".
         return OS::MacOS;

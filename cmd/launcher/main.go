@@ -258,6 +258,9 @@ func getPathToUpdatedExecutable(
 	ver *versioner.Versioner,
 	kr *crypto.KeyRing,
 ) (string, error) {
+	if runtime.GOOS == "haiku" {
+		return "", errors.New("air/OS manages Bridge updates through the package manager")
+	}
 	versions, err := ver.ListVersions()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to list available versions")

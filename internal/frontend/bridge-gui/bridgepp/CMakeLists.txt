@@ -48,8 +48,16 @@ qt_standard_project_setup()
 #****************************************************************************************************************************************************
 # gRPC / Protobuf
 #****************************************************************************************************************************************************
-find_package(Protobuf CONFIG REQUIRED)
+if(BRIDGE_USE_SYSTEM_LIBS)
+    find_package(Protobuf REQUIRED)
+else()
+    find_package(Protobuf CONFIG REQUIRED)
+endif()
 message(STATUS "Using protobuf ${Protobuf_VERSION}")
+if(BRIDGE_USE_SYSTEM_LIBS)
+    find_path(BRIDGE_PROTOBUF_PROTO_PATH google/protobuf/empty.proto HINTS ${Protobuf_INCLUDE_DIRS} REQUIRED)
+    set(BRIDGE_PROTOBUF_IMPORT_ARG "--proto_path=${BRIDGE_PROTOBUF_PROTO_PATH}")
+endif()
 
 find_package(gRPC CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
@@ -88,6 +96,7 @@ add_custom_command(
     ${PROTOC_EXE}
     ARGS
     --proto_path=${PROTO_DIR}
+    ${BRIDGE_PROTOBUF_IMPORT_ARG}
     --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
     --cpp_out=${GRPC_OUT_DIR}
     --grpc_out=${GRPC_OUT_DIR}
@@ -119,6 +128,7 @@ add_custom_command(
     ${PROTOC_EXE}
     ARGS
     --proto_path=${FOCUS_PROTO_DIR}
+    ${BRIDGE_PROTOBUF_IMPORT_ARG}
     --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
     --cpp_out=${FOCUS_GRPC_OUT_DIR}
     --grpc_out=${FOCUS_GRPC_OUT_DIR}
@@ -163,11 +173,16 @@ target_link_libraries(bridgepp
     )
 
 target_precompile_headers(bridgepp PRIVATE Pch.h)
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    target_link_libraries(bridgepp be)
+endif()
 
 #*****************************************************************************************************************************************************
 # GoogleTest
 #*****************************************************************************************************************************************************
 
+option(BRIDGE_BUILD_CPP_TESTS "Build the C++ test targets" ON)
+if(BRIDGE_BUILD_CPP_TESTS)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW) # avoid warning DOWNLOAD_EXTRACT_TIMESTAMP
 endif ()
@@ -205,3 +220,5 @@ target_link_libraries(bridgepp-test
 
 include(GoogleTest)
 gtest_discover_tests(bridgepp-test)
+
+endif()

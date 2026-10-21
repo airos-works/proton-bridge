@@ -215,7 +215,7 @@ void focusOtherInstance() {
     } catch (Exception const &e) {
         app().log().error(e.qwhat());
         auto uuid = reportSentryException("Exception occurred during focusOtherInstance()", e);
-        app().log().fatal(QString("reportID: %1 Captured exception: %2").arg(QByteArray(uuid.bytes, 16).toHex(), e.qwhat()));
+        app().log().fatal(QString("reportID: %1 Captured exception: %2").arg(uuid, e.qwhat()));
     }
 }
 
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
 
     BridgeApp guiApp(argc, argv);
     initSentry();
-    auto sentryCloser = qScopeGuard([] { sentry_close(); });
+    auto sentryCloser = qScopeGuard([] { closeSentry(); });
 
     try {
         QString const &configDir = bridgepp::userConfigDir();
@@ -311,7 +311,9 @@ int main(int argc, char *argv[]) {
         // In attached mode, we do not intercept stderr and stdout of bridge, as we did not launch it ourselves, so we output the log to the console.
         // When not in attached mode, log entries are forwarded to bridge, which output it on stdout/stderr. bridge-gui's process monitor intercept
         // these outputs and output them on the command-line.
+#if BRIDGE_WITH_SENTRY
         log.info(QString("New Sentry reporter - id: %1.").arg(getProtectedHostname()));
+#endif
 
         QString const &sessionID = app().sessionID();
         QString bridgeExe;
@@ -420,8 +422,8 @@ int main(int argc, char *argv[]) {
         QMessageBox::critical(nullptr, "Error", message);
 
         if (e.qwhat() != orphanInstanceException) {
-            sentry_uuid_s const uuid = reportSentryException("Exception occurred during main", e);
-            QTextStream(stderr) << "reportID: " << QByteArray(uuid.bytes, 16).toHex() << " Captured exception :"
+            QByteArray const uuid = reportSentryException("Exception occurred during main", e);
+            QTextStream(stderr) << "reportID: " << uuid << " Captured exception :"
                                 << e.detailedWhat() << "\n";
         }
 

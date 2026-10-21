@@ -33,6 +33,7 @@ enum class OS {
     Linux = 0, ///< The Linux OS.
     MacOS = 1, ///< The macOS OS.
     Windows = 2, ///< The Windows OS.
+    Haiku = 3, ///< Haiku and air/OS.
 };
 
 

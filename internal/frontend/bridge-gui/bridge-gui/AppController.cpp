@@ -25,7 +25,6 @@
 #include <bridgepp/Exception/Exception.h>
 #include <bridgepp/ProcessMonitor.h>
 #include <bridgepp/Log/Log.h>
-#include <sentry.h>
 
 
 using namespace bridgepp;
@@ -94,11 +93,11 @@ Settings &AppController::settings() {
 /// \param[in] exception The exception that triggered the fatal error.
 //****************************************************************************************************************************************************
 void AppController::onFatalError(Exception const &exception) {
-    sentry_uuid_t uuid = reportSentryException("AppController got notified of a fatal error", exception);
+    QByteArray const uuid = reportSentryException("AppController got notified of a fatal error", exception);
 
     QMessageBox::critical(nullptr, tr("Error"), exception.what());
     restart(true);
-    log().fatal(QString("reportID: %1 Captured exception: %2").arg(QByteArray(uuid.bytes, 16).toHex(), exception.detailedWhat()));
+    log().fatal(QString("reportID: %1 Captured exception: %2").arg(uuid, exception.detailedWhat()));
     qApp->exit(EXIT_FAILURE);
 }
 

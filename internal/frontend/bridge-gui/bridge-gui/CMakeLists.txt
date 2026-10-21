@@ -88,7 +88,14 @@ message(STATUS "Using Qt ${Qt6_VERSION}")
 #*****************************************************************************************************************************************************
 # Sentry Native
 #*****************************************************************************************************************************************************
-find_package(sentry CONFIG REQUIRED)
+set(_bridge_sentry_default ON)
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    set(_bridge_sentry_default OFF)
+endif()
+option(BRIDGE_WITH_SENTRY "Enable native Sentry crash reporting" ${_bridge_sentry_default})
+if(BRIDGE_WITH_SENTRY)
+    find_package(sentry CONFIG REQUIRED)
+endif()
 
 #*****************************************************************************************************************************************************
 # Source files and output
@@ -160,9 +167,13 @@ target_link_libraries(bridge-gui
     Qt6::QuickControls2
     Qt6::Svg
     Qt6::Gui
-    sentry::sentry
     bridgepp
     )
+
+target_compile_definitions(bridge-gui PRIVATE BRIDGE_WITH_SENTRY=$<BOOL:${BRIDGE_WITH_SENTRY}>)
+if(BRIDGE_WITH_SENTRY)
+    target_link_libraries(bridge-gui sentry::sentry)
+endif()
 
 if (APPLE)
     target_link_libraries(bridge-gui ${COCOA_LIBRARY})
@@ -188,7 +199,9 @@ qt_generate_deploy_app_script(
         OUTPUT_SCRIPT deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR)
 
-if(UNIX AND NOT APPLE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    set(DEPLOY_OS Haiku)
+elseif(UNIX AND NOT APPLE)
     set(DEPLOY_OS Linux)
 elseif(APPLE)
     set(DEPLOY_OS Darwin)

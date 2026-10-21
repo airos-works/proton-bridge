@@ -24,6 +24,9 @@
 using namespace bridgepp;
 
 
+#if BRIDGE_WITH_SENTRY
+#include <sentry.h>
+sentry_options_t* newSentryOptions(const char *sentryDNS, const char *cacheDir);
 static constexpr const char *LoggerName = "bridge-gui";
 
 
@@ -158,7 +161,7 @@ sentry_uuid_t reportSentryException(sentry_level_t level, const char *message, c
 /// \param[in] exception The exception.
 /// \return The Sentry exception UUID.
 //****************************************************************************************************************************************************
-sentry_uuid_t reportSentryException(QString const &message, bridgepp::Exception const exception) {
+QByteArray reportSentryException(QString const &message, bridgepp::Exception const exception) {
     QByteArray const attachment = exception.attachment();
     QFile file(sentryAttachmentFilePath());
     bool const hasAttachment = !attachment.isEmpty();
@@ -176,6 +179,20 @@ sentry_uuid_t reportSentryException(QString const &message, bridgepp::Exception 
         file.remove();
     }
 
-    return uuid;
+    return QByteArray(uuid.bytes, 16).toHex();
 }
 
+
+void closeSentry() { sentry_close(); }
+#else
+void initSentry() {}
+void closeSentry() {}
+void setSentryReportScope() {}
+QByteArray getProtectedHostname() {
+    return QCryptographicHash::hash(QSysInfo::machineHostName().toUtf8(), QCryptographicHash::Sha256).toBase64();
+}
+QByteArray reportSentryException(QString const &message, bridgepp::Exception const exception) {
+    QTextStream(stderr) << message << ": " << exception.detailedWhat() << "\n";
+    return {};
+}
+#endif

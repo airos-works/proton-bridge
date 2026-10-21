@@ -16,7 +16,7 @@ int main()
         if (image.type != B_APP_IMAGE)
             continue;
         BPath path(image.name);
-        if (path.GetParent(&path) != B_OK || path.Append("bridge") != B_OK)
+        if (path.GetParent(&path) != B_OK || path.Append("launcher") != B_OK)
             return 1;
         const char* args[] = {path.Path(), "--no-window", NULL};
         execv(path.Path(), const_cast<char* const*>(args));

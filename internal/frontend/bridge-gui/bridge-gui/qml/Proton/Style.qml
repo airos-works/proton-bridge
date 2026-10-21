@@ -197,7 +197,7 @@ QtObject {
         case "linux":
             return "Ubuntu";
         default:
-            console.error("Unknown platform");
+            return Qt.application.font.family;
         }
     }
     property int heading_font_size: 28

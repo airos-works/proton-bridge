@@ -29,4 +29,7 @@ project(frontend)
 
 add_subdirectory(bridgepp)
 add_subdirectory(bridge-gui)
-add_subdirectory(bridge-gui-tester)
+option(BRIDGE_BUILD_GUI_TESTER "Build the standalone GUI test harness" ON)
+if(BRIDGE_BUILD_GUI_TESTER)
+    add_subdirectory(bridge-gui-tester)
+endif()

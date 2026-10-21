@@ -34,6 +34,7 @@ SettingsView {
     }
     SettingsItem {
         id: autoUpdate
+        visible: Backend.goos !== "haiku"
         Layout.fillWidth: true
         checked: Backend.isAutomaticUpdateOn
         colorScheme: root.colorScheme
@@ -67,6 +68,7 @@ SettingsView {
     }
     SettingsItem {
         id: beta
+        visible: Backend.goos !== "haiku"
         Layout.fillWidth: true
         checked: Backend.isBetaEnabled
         colorScheme: root.colorScheme

@@ -41,6 +41,7 @@ SettingsView {
     }
     SettingsItem {
         id: checkUpdates
+        visible: Backend.goos !== "haiku"
         Layout.fillWidth: true
         actionText: qsTr("Check now")
         colorScheme: root.colorScheme
@@ -60,6 +61,13 @@ SettingsView {
 
             target: Backend
         }
+    }
+    Label {
+        Layout.fillWidth: true
+        colorScheme: root.colorScheme
+        text: qsTr("Bridge updates are provided through air/OS SoftwareUpdater.")
+        wrapMode: Text.WordWrap
+        visible: Backend.goos === "haiku"
     }
     SettingsItem {
         id: logs

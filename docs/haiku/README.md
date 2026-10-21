@@ -19,10 +19,8 @@ package are not yet ready for user validation. Implemented so far:
 - Package-manager-owned updates, with no Proton binary update feed.
 - Working CLI and local IMAP/SMTP services.
 
-Still required: build the desktop interface, package it, integrate the package
-into the air/OS core image build,
-run native application smoke tests and install the validation build on the
-Framework laptop through MCP. Actual Proton account login/mail validation will
+The desktop interface now builds and runs on the laptop. Packaging and core-image
+integration are in progress; the final packaged installation still needs validation. Actual Proton account login/mail validation will
 require the user's account; do not put credentials in scripts or evidence.
 
 ## Toolchain
@@ -73,17 +71,17 @@ attempt needs libsecret development files; it did not provide a passing result.
 ### Engine milestone
 
 `tools/haiku/build-engine.sh` builds the real Bridge engine and an ELF autostart
-launcher. The launcher starts the adjacent `bridge` with `--no-window`; its
-boot-launch link is managed through `B_USER_BOOT_DIRECTORY`. It will need the
-GUI beside the engine before the GUI/autostart path can be exercised end to end.
+launcher. The autostart helper starts the adjacent `launcher` with `--no-window`; its
+boot-launch link is managed through `B_USER_BOOT_DIRECTORY`. The GUI, engine and launcher must be installed together.
 
 Additional laptop checks passed:
 
 - CLI startup, `version`, empty account list and normal exit (3.27.1+git).
 - A second process reopened the previously created encrypted vault successfully.
 - Headless engine served IMAP CAPABILITY/LOGOUT on 127.0.0.1:1143 and SMTP
-  EHLO/QUIT on 127.0.0.1:1025; both advertised STARTTLS. TLS handshakes and
-  authenticated mail transfer still need testing.
+  EHLO/QUIT on 127.0.0.1:1025; both advertised STARTTLS. TLS 1.3 STARTTLS handshakes subsequently passed for both protocols. The
+  certificate is self-signed, as expected; a mail client must trust the local
+  certificate. Authenticated mail transfer still needs account validation.
 - `app.test -test.run '^TestHaiku'`: access-denied, unavailable-service, and
   missing-key cases preserve the existing vault and do not create an insecure
   vault; autostart enable/disable preserves unrelated startup files.
@@ -106,6 +104,42 @@ The current core image pipeline is `jmgasper/airos-ci` (local checkout
 `/mnt/HaikuWork/src/airos-ci`): `apps/build-app-packages.sh` builds app packages,
 `apps/ci-build-app.sh` adds them to the architecture package pool, and
 `images/build-image.sh` selects the core image apps in `IMAGE_APPS`.
-Add Bridge there once the desktop package and its dependencies are built. The
-GUI's `BridgeUtils.cpp` also needs native settings/cache paths to agree with the
-Go engine, and `BridgeSetup.cmake` currently assumes vcpkg.
+Add Bridge there once the desktop package and its dependencies are built. The GUI now uses native paths and system libraries.
+
+### Desktop milestone
+
+The real Qt/QML welcome screen was displayed on the Framework laptop. The GUI
+launched the engine, validated its local gRPC token and loaded its settings and
+empty account list. Normal GUI shutdown terminated the engine and launcher.
+A fresh launch without rendering flags also worked without QML platform errors.
+The default renderer on air/OS is Qt Quick software rendering.
+
+- System packages: Qt 6.10.3, protobuf 3.20.1 and gRPC 1.53.0.
+- `tools/haiku/build-host-tools.sh` downloads checksum-pinned sources and builds
+  Linux moc/rcc/protoc/grpc_cpp_plugin. It and `build-gui.sh` were exercised from
+  a fresh GUI build directory. No target executable runs on the Linux host.
+- `tools/haiku/build-go-toolchain.sh` bootstraps the pinned Haiku Go branch for CI.
+- The native process provider enumerates teams and resolves executable paths.
+  All launcher tests passed on the laptop, including self/parent PID, executable
+  identity, CPU/user queries, invalid PID, and ignoring self-update directories.
+- Native Sentry crash reporting is disabled because no Haiku Sentry backend is
+  available. Exceptions still go to local logs; no report ID is fabricated.
+- Update/beta toggles are hidden on air/OS. Help directs users to SoftwareUpdater.
+- `dist/haiku/Bridge.hvif` is generated from the upstream SVG silhouette with
+  `tools/haiku/make-icon.py`; Haiku's BIconUtils rendered it successfully.
+
+Example desktop cross build (paths supplied by the caller):
+
+```sh
+export BRIDGE_HOST_BUILD=/path/to/host-tools
+export BRIDGE_DOWNLOAD_CACHE=/path/to/download-cache
+tools/haiku/build-host-tools.sh
+export HAIKU_SDK_ENV=/path/to/airos-sdk/x86_64/env.sh
+export HAIKU_GUI_DEPS=/path/to/extracted-haikuports-dependencies
+tools/haiku/build-gui.sh
+```
+
+The dependency prefix must contain the runtime and development packages for
+`qt6_base`, `qt6_declarative`, `qt6_svg`, `grpc`, `protobuf`, and their dependencies.
+The build supports x86_64 currently; equivalent desktop dependencies are not
+available in the air/OS ARM64 package set yet.

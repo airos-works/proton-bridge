@@ -45,6 +45,16 @@ if (NOT DEFINED BRIDGE_APP_VERSION)
 endif()
 
 
+# air/OS uses its system packages and the caller's native/cross toolchain.
+set(_bridge_system_libs_default OFF)
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku" OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Haiku")
+    set(_bridge_system_libs_default ON)
+endif()
+option(BRIDGE_USE_SYSTEM_LIBS "Use system Qt/gRPC packages instead of vcpkg" ${_bridge_system_libs_default})
+if(BRIDGE_USE_SYSTEM_LIBS)
+    return()
+endif()
+
 #****************************************************************************************************************************************************
 # vcpkg, toolchain, and architecture
 #****************************************************************************************************************************************************
