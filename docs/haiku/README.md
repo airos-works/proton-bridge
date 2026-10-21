@@ -125,6 +125,11 @@ empty account list. Normal GUI shutdown terminated the engine and launcher.
 A fresh launch without rendering flags also worked without QML platform errors.
 The default renderer on air/OS is Qt Quick software rendering.
 
+The packaged GUI executable is named `Proton Mail Bridge`, which supplies its
+Deskbar label. The engine and launcher carry native `B_BACKGROUND_APP` resources
+so only the GUI appears in the running application list. The engine retains its
+existing key-store signature and installed path.
+
 - System packages: Qt 6.10.3, protobuf 3.20.1 and gRPC 1.53.0.
 - `tools/haiku/build-host-tools.sh` downloads checksum-pinned sources and builds
   Linux moc/rcc/protoc/grpc_cpp_plugin. It and `build-gui.sh` were exercised from

@@ -38,4 +38,4 @@ cmake -S "$ROOT/internal/frontend/bridge-gui" -B "$BUILD" -G Ninja \
 # Do not import Haiku's optional QML/UI/shader code generators on the Linux host.
 cmake --build "$BUILD" --target bridge-gui -j"${JOBS:-8}"
 mkdir -p "$OUT"
-cp "$BUILD/bridge-gui/bridge-gui" "$OUT/bridge-gui"
+cp "$BUILD/bridge-gui/Proton Mail Bridge" "$OUT/Proton Mail Bridge"

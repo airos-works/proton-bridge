@@ -1,0 +1,10 @@
+resource app_version {
+    major = 3,
+    middle = 27,
+    minor = 1,
+    variety = B_APPV_DEVELOPMENT,
+    internal = 1,
+    short_info = "Proton Mail Bridge for air/OS",
+    long_info = "Community air/OS port of Proton Mail Bridge 3.27.1"
+};
+resource vector_icon { import "Bridge.hvif" };

@@ -133,6 +133,10 @@ func main() { //nolint:funlen
 	exe, err := getPathToUpdatedExecutable(filepath.Base(launcher), versioner, kr)
 	if err != nil {
 		exeToLaunch := guiName
+		if runtime.GOOS == "haiku" {
+			// Deskbar uses the GUI executable's name for the running app.
+			exeToLaunch = "Proton Mail Bridge"
+		}
 		if inCLIMode(args) {
 			exeToLaunch = exeName
 		}
