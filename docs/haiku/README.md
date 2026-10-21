@@ -4,10 +4,20 @@ This fork targets a native air/OS application, included in the core image, using
 BKeyStore for the Bridge vault key. The upstream Go mail engine and IMAP/SMTP
 implementation remain the basis of the port.
 
-## Work in progress
+## Installed validation build
 
-The engine and Qt desktop run on the laptop. An installable package has been
-built through air/OS CI; final package validation is in progress. Implemented so far:
+The x86_64 package `proton_bridge-3.27.1~airos1792544465-1-x86_64.hpkg` is installed
+on the Framework laptop through MCP. It was built from `b9d5997b`, with core-image
+integration committed in `jmgasper/airos-ci` at `a3f6dd3`. Its SHA-256 is
+`b433121ed69613203780840dd28d229ff0532cc5abbbab81eaa96bdd2efcebc8`.
+
+The native key store requires first-use authorization for the installed engine
+at `/boot/system/apps/ProtonMailBridge/bridge`. Authorization granted to the
+previous development path does not carry over. If startup waits at the key-store
+dialog, allow the installed Bridge to read its vault key. No insecure fallback
+is used. Packaged GUI validation is awaiting that authorization.
+
+Implemented so far:
 
 - Native BKeyStore credential helper with service isolation, retrieval, listing,
   replacement and deletion. The key store controls application authorization.
@@ -19,9 +29,9 @@ built through air/OS CI; final package validation is in progress. Implemented so
 - Package-manager-owned updates, with no Proton binary update feed.
 - Working CLI and local IMAP/SMTP services.
 
-The desktop interface now builds and runs on the laptop. Packaging and core-image
-integration are in progress; the final packaged installation still needs validation. Actual Proton account login/mail validation will
-require the user's account; do not put credentials in scripts or evidence.
+The desktop interface runs on the laptop, and the pinned core-image package
+build and package installation both passed. Actual Proton account login/mail
+validation requires the user's account; do not put credentials in scripts or evidence.
 
 ## Toolchain
 
@@ -94,9 +104,9 @@ method; it does not bypass two-factor authentication. Password/authenticator-cod
 login is retained but needs account validation. Do not call the port complete
 based only on these component and unauthenticated service checks.
 
-The test executables are in `/boot/home/proton-bridge-port-tests` on the laptop.
-They are development artifacts, not the requested final packaged installation.
-The headless smoke-test process was stopped normally after checking its services.
+Development tests were run from `/boot/home/proton-bridge-port-tests`. The
+installed application is in `/boot/system/apps/ProtonMailBridge` and the command
+is `/boot/system/bin/proton-bridge`.
 
 ### Core-build integration
 
@@ -150,3 +160,19 @@ Further desktop checks passed: killing the GUI caused the engine to shut down,
 the native autostart helper launched the GUI/engine with `--no-window`, and a
 second launcher invocation raised the existing window. A successful focus now
 returns success instead of being logged as a launch failure.
+
+### Validation steps
+
+1. Approve the installed Bridge's native key-store dialog, then open **Applications
+   → Proton Mail Bridge** in Deskbar (or run `proton-bridge`).
+2. Sign in using a Proton account with Bridge access. Password and authenticator
+   codes are supported; hardware FIDO security keys are not supported by this port.
+3. Configure a mail client using the **Bridge-generated** username/password and
+   the local IMAP/SMTP settings shown by Bridge. The defaults are localhost ports
+   1143 and 1025 with STARTTLS. Trust Bridge's local self-signed certificate in
+   that client; system-wide certificate installation is not implemented on air/OS.
+4. Check message sync, reading, sending, restarting Bridge and reopening the
+   account. These account-dependent checks have not been performed by the agent.
+
+The native Go TLS stack successfully verified `mail-api.proton.me` using the
+system CA bundle and TLS 1.3. Local IMAP/SMTP STARTTLS handshakes also passed.
