@@ -123,6 +123,13 @@ builds a reviewed commit from `apps/bridge.lock.json` through `build-pinned.sh`.
 The pin must be reachable from this fork's `master`; its provenance is saved
 in the image manifest. ARM64 image builds do not include Bridge yet.
 
+Every push to `master` also runs `.github/workflows/airos.yml`, which calls
+airos-ci's reusable `app.yml` on the self-hosted build server. It builds the
+x86_64 package and publishes it as this repository's rolling
+[`latest`](https://github.com/jmgasper/proton-bridge/releases/tag/latest)
+prerelease, with SHA-256 checksums in the release notes and download links in
+the main README's "Latest builds" section.
+
 ### Desktop milestone
 
 The real Qt/QML welcome screen was displayed on the Framework laptop. The GUI
