@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
-: "${HAIKU_SDK_ENV:?Set HAIKU_SDK_ENV to the air/OS x86_64 SDK env.sh}"
-: "${HAIKU_GUI_DEPS:?Set HAIKU_GUI_DEPS to the extracted HaikuPorts dependency prefix}"
+: "${HAIKU_SDK_ENV:?Set HAIKU_SDK_ENV to the air/OS SDK env.sh}"
+: "${HAIKU_GUI_DEPS:?Set HAIKU_GUI_DEPS to the dependency prefix (x86_64: extracted HaikuPorts packages; arm64: build-gui-deps.sh)}"
 . "$HAIKU_SDK_ENV"
-[[ $AIROS_ARCH == x86_64 ]] || { echo 'The desktop dependency set currently supports x86_64 only' >&2; exit 1; }
-export CROSS SYSROOT UNWIND_SPECS HAIKU_GUI_DEPS
+case $AIROS_ARCH in
+    x86_64) HAIKU_PROCESSOR=x86_64 ;;
+    # build-gui-deps.sh's prefix; HAIKU_GUI_EXTRA: its FreeType and GL tree
+    arm64) HAIKU_PROCESSOR=aarch64; : "${HAIKU_GUI_EXTRA:?Set HAIKU_GUI_EXTRA as for build-gui-deps.sh}" ;;
+    *) echo "No desktop dependency set for $AIROS_ARCH" >&2; exit 1 ;;
+esac
+export CROSS SYSROOT UNWIND_SPECS HAIKU_GUI_DEPS HAIKU_PROCESSOR ${HAIKU_GUI_EXTRA:+HAIKU_GUI_EXTRA}
 HOST=${BRIDGE_HOST_BUILD:-$ROOT/build-haiku/host-tools}
 BUILD=${BRIDGE_GUI_BUILD:-$ROOT/build-haiku/gui}
 OUT=${BRIDGE_BUILD_DIR:-$ROOT/build-haiku}
@@ -15,7 +20,7 @@ for tool in "$HOST/qt-host/libexec/moc" "$HOST/qt-host/libexec/rcc" "$HOST/proto
 done
 # HaikuPorts .pc files contain /packages/.../.self prefixes. Override that
 # variable and isolate pkg-config from Linux libraries without editing packages.
-export PKG_CONFIG_LIBDIR="$HAIKU_GUI_DEPS/develop/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="$HAIKU_GUI_DEPS/develop/lib/pkgconfig:$HAIKU_GUI_DEPS/lib/pkgconfig"
 export PKG_CONFIG_PATH=
 cmake -S "$ROOT/internal/frontend/bridge-gui" -B "$BUILD" -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="$ROOT/tools/haiku/gui-toolchain.cmake" -DCMAKE_BUILD_TYPE=Release \

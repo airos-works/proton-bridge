@@ -1,6 +1,6 @@
-# Builds the air/OS package (x86_64; the Qt, gRPC and protobuf dependency set
-# exists only there) on every push to master and publishes it to the rolling
-# "latest" release, with links in the README.
+# Builds the air/OS packages (x86_64 with HaikuPorts' Qt, gRPC and protobuf;
+# arm64 with tools/haiku/build-gui-deps.sh's) on every push to master and
+# publishes them to the rolling "latest" release, with links in the README.
 # The pipeline itself lives in jmgasper/airos-ci.
 name: air/OS build
 
@@ -15,6 +15,5 @@ jobs:
     with:
       app: proton_bridge
       repo-dir: proton-bridge
-      architectures: x86_64
     permissions:
       contents: write

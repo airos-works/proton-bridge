@@ -69,6 +69,21 @@ process/system failure between removal and insertion remains an OS API
 limitation; Bridge normally creates its vault key once. A missing key for an
 existing vault is reported, not silently regenerated.
 
+## arm64
+
+The engine and launcher cross-build for `GOOS=haiku GOARCH=arm64` with the same
+Go fork. HaikuPorts has no arm64 Qt, gRPC or protobuf, so
+`tools/haiku/build-gui-deps.sh` cross-builds the versions HaikuPorts ships for
+x86_64 into one prefix: a host Qt 6.10.3 (qtbase, qtshadertools,
+qtdeclarative) for the code generators, then Qt 6.10.3 qtbase, qtdeclarative
+(interpreter only: the QML JIT's Haiku support is x86_64's) and qtsvg with
+HaikuPorts' patches (`tools/haiku/patches`), the `qt6-haikuplugins` platform
+plugin, and protobuf 3.20.1, abseil 20230125.3, re2 2022-06-01, c-ares 1.34.8
+and gRPC 1.53.0 as static libraries. Qt is shared and relocatable; air/OS CI
+packages it privately in `apps/ProtonMailBridge/{lib,plugins,qml}`.
+`build-gui.sh` then builds the interface for arm64 with `HAIKU_GUI_EXTRA`
+pointing at the tree with FreeType, OpenSSL and the GL stack.
+
 ## Verification (2026-10-21)
 
 Cross-compiled with the pinned Go fork and GCC 13.3.0. On the Framework laptop
