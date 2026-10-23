@@ -10,6 +10,18 @@ The license can be found in [LICENSE](./LICENSE) file, for more licensing inform
 For contribution policy see [CONTRIBUTING](./CONTRIBUTING.md).
 
 
+<!-- airos-ci:latest-builds:start -->
+## Latest builds
+
+Built automatically by air/OS CI from commit `7c6e146` on 2026-10-23 ([all files](https://github.com/jmgasper/proton-bridge/releases/tag/latest)).
+
+| Architecture | Package |
+|---|---|
+| x86_64 | [proton_bridge-3.27.1.airos1792712285-1-x86_64.hpkg](https://github.com/jmgasper/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1792712285-1-x86_64.hpkg) |
+
+Install with `pkgman install <file>`, or copy the file into `/boot/system/packages`. Haiku SDK: x86_64 hrev60207-1741-g6fde1e10f8, arm64 hrev60207-1741-g6fde1e10f8.
+<!-- airos-ci:latest-builds:end -->
+
 ## Description Bridge
 Proton Mail Bridge for e-mail clients.
 
