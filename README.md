@@ -13,13 +13,15 @@ For contribution policy see [CONTRIBUTING](./CONTRIBUTING.md).
 <!-- airos-ci:latest-builds:start -->
 ## Latest builds
 
-Built automatically by air/OS CI from commit `7c6e146` on 2026-10-23 ([all files](https://github.com/jmgasper/proton-bridge/releases/tag/latest)).
+Built automatically by air/OS CI from commit `794b919` on 2026-10-23 ([all files](https://github.com/jmgasper/proton-bridge/releases/tag/latest)).
 
 | Architecture | Package |
 |---|---|
-| x86_64 | [proton_bridge-3.27.1.airos1792712285-1-x86_64.hpkg](https://github.com/jmgasper/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1792712285-1-x86_64.hpkg) |
+| arm64 | [proton_bridge-3.27.1.airos1792739370-1-arm64.hpkg](https://github.com/jmgasper/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1792739370-1-arm64.hpkg) |
+| arm64 | [qsystray-5.15.2.14-1-arm64.hpkg](https://github.com/jmgasper/proton-bridge/releases/download/latest/qsystray-5.15.2.14-1-arm64.hpkg) |
+| x86_64 | [proton_bridge-3.27.1.airos1792739370-1-x86_64.hpkg](https://github.com/jmgasper/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1792739370-1-x86_64.hpkg) |
 
-Install with `pkgman install <file>`, or copy the file into `/boot/system/packages`. Haiku SDK: x86_64 hrev60207-1741-g6fde1e10f8, arm64 hrev60207-1741-g6fde1e10f8.
+Install with `pkgman install <file>`, or copy the file into `/boot/system/packages`. Haiku SDK: x86_64 hrev60207-1742-gbbf101b920, arm64 hrev60207-1742-gbbf101b920.
 <!-- airos-ci:latest-builds:end -->
 
 ## Description Bridge
