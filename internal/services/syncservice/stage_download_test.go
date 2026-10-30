@@ -22,7 +22,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/ProtonMail/gluon/async"
 	"github.com/ProtonMail/go-proton-api"
@@ -107,6 +109,48 @@ func TestAutoDownloadScale_AllOkay(t *testing.T) {
 	require.Equal(t, xslices.Map(data, newDownloadScaleMessage), msgs)
 }
 
+func TestAutoDownloadScale_AllOkayUsesMaxParallel(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	client := NewMockAPIClient(mockCtrl)
+	data := buildDownloadScaleData(24)
+
+	const MaxParallel = 8
+
+	var inFlight, maxInFlight int32
+
+	client.EXPECT().GetMessage(gomock.Any(), gomock.Any()).Times(len(data)).DoAndReturn(func(ctx context.Context, id string) (proton.Message, error) {
+		n := atomic.AddInt32(&inFlight, 1)
+		defer atomic.AddInt32(&inFlight, -1)
+
+		for {
+			m := atomic.LoadInt32(&maxInFlight)
+			if n <= m || atomic.CompareAndSwapInt32(&maxInFlight, m, n) {
+				break
+			}
+		}
+
+		time.Sleep(20 * time.Millisecond)
+
+		return autoDownloadScaleClientDoAndReturn(ctx, id)
+	})
+
+	msgs, err := autoDownloadRate(
+		context.Background(),
+		&DefaultDownloadRateModifier{},
+		client,
+		MaxParallel,
+		data,
+		autoScaleCoolDown,
+		func(ctx context.Context, client APIClient, input string) (proton.Message, error) {
+			return client.GetMessage(ctx, input)
+		},
+	)
+
+	require.NoError(t, err)
+	require.Equal(t, xslices.Map(data, newDownloadScaleMessage), msgs)
+	require.Equal(t, int32(MaxParallel), atomic.LoadInt32(&maxInFlight))
+}
+
 func TestAutoDownloadScale_429or500x(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	client := NewMockAPIClient(mockCtrl)
@@ -135,14 +179,14 @@ func TestAutoDownloadScale_429or500x(t *testing.T) {
 
 	defaultRateModifier := DefaultDownloadRateModifier{}
 
-	// First call catches failure in message m7, we throttle.
-	call1 := rateModifier.EXPECT().Apply(gomock.Eq(false), gomock.Eq(8), gomock.Eq(8)).Return(defaultRateModifier.Apply(false, 8, 8))
+	// No failures before the first batch, so we start at full parallelism.
+	call1 := rateModifier.EXPECT().Apply(gomock.Eq(true), gomock.Eq(8), gomock.Eq(8)).Return(defaultRateModifier.Apply(true, 8, 8))
+	// First batch catches failure in message m7, we throttle.
+	call2 := rateModifier.EXPECT().Apply(gomock.Eq(false), gomock.Eq(8), gomock.Eq(8)).Return(defaultRateModifier.Apply(false, 8, 8))
 	// Next batch succeeds. So we bump the parallel downloads by 2x.
-	call2 := rateModifier.EXPECT().Apply(gomock.Eq(true), gomock.Eq(2), gomock.Eq(8)).Return(defaultRateModifier.Apply(true, 2, 8))
+	call3 := rateModifier.EXPECT().Apply(gomock.Eq(true), gomock.Eq(2), gomock.Eq(8)).Return(defaultRateModifier.Apply(true, 2, 8))
 	// We now encounter a 503 with m23. Reset to 2 parallel downloads.
-	call3 := rateModifier.EXPECT().Apply(gomock.Eq(false), gomock.Eq(4), gomock.Eq(8)).Return(defaultRateModifier.Apply(false, 4, 8))
-	// The next batch succeeds once again.
-	call4 := rateModifier.EXPECT().Apply(gomock.Eq(true), gomock.Eq(2), gomock.Eq(8)).Return(defaultRateModifier.Apply(true, 2, 8))
+	call4 := rateModifier.EXPECT().Apply(gomock.Eq(false), gomock.Eq(4), gomock.Eq(8)).Return(defaultRateModifier.Apply(false, 4, 8))
 
 	gomock.InOrder(call1, call2, call3, call4)
 

@@ -255,7 +255,7 @@ func autoDownloadRate[T any, R any](
 			return nil, err
 		}
 
-		parallelTasks = modifier.Apply(atomic.LoadInt32(&proton429or5xxCounter) != 0, parallelTasks, maxParallelDownloads)
+		parallelTasks = modifier.Apply(atomic.LoadInt32(&proton429or5xxCounter) == 0, parallelTasks, maxParallelDownloads)
 
 		atomic.StoreInt32(&proton429or5xxCounter, 0)
 
