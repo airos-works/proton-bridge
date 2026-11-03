@@ -13,13 +13,13 @@ For contribution policy see [CONTRIBUTING](./CONTRIBUTING.md).
 <!-- airos-ci:latest-builds:start -->
 ## Latest builds
 
-Built automatically by air/OS CI from commit `463649c` on 2026-11-03 ([all files](https://github.com/airos-works/proton-bridge/releases/tag/latest)).
+Built automatically by air/OS CI from commit `a53bc5e` on 2026-11-03 ([all files](https://github.com/airos-works/proton-bridge/releases/tag/latest)).
 
 | Architecture | Package |
 |---|---|
-| arm64 | [proton_bridge-3.27.1.airos1793738004-1-arm64.hpkg](https://github.com/airos-works/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1793738004-1-arm64.hpkg) |
+| arm64 | [proton_bridge-3.27.1.airos1793738554-1-arm64.hpkg](https://github.com/airos-works/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1793738554-1-arm64.hpkg) |
 | arm64 | [qsystray-5.15.2.14-1-arm64.hpkg](https://github.com/airos-works/proton-bridge/releases/download/latest/qsystray-5.15.2.14-1-arm64.hpkg) |
-| x86_64 | [proton_bridge-3.27.1.airos1793738004-1-x86_64.hpkg](https://github.com/airos-works/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1793738004-1-x86_64.hpkg) |
+| x86_64 | [proton_bridge-3.27.1.airos1793738554-1-x86_64.hpkg](https://github.com/airos-works/proton-bridge/releases/download/latest/proton_bridge-3.27.1.airos1793738554-1-x86_64.hpkg) |
 
 Install with `pkgman install <file>`, or copy the file into `/boot/system/packages`. Haiku SDK: x86_64 hrev60207-2447-gcbdd6fbb4a, arm64 hrev60207-2447-gcbdd6fbb4a.
 <!-- airos-ci:latest-builds:end -->
