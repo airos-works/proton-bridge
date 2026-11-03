@@ -20,12 +20,14 @@ package bridge_test
 import (
 	"context"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/ProtonMail/go-proton-api"
 	"github.com/ProtonMail/go-proton-api/server"
 	"github.com/ProtonMail/proton-bridge/v3/internal/bridge"
 	"github.com/ProtonMail/proton-bridge/v3/internal/events"
+	"github.com/ProtonMail/proton-bridge/v3/internal/platform"
 	"github.com/stretchr/testify/require"
 )
 
@@ -174,8 +176,8 @@ func TestBridge_Settings_Proxy(t *testing.T) {
 func TestBridge_Settings_Autostart(t *testing.T) {
 	withEnv(t, func(ctx context.Context, s *server.Server, netCtl *proton.NetCtl, locator bridge.Locator, storeKey []byte) {
 		withBridge(ctx, t, s.GetHostURL(), netCtl, locator, storeKey, func(bridge *bridge.Bridge, mocks *bridge.Mocks) {
-			// By default, autostart is enabled.
-			require.True(t, bridge.GetAutostart())
+			// By default, autostart is enabled, except on air/OS.
+			require.Equal(t, runtime.GOOS != platform.HAIKU, bridge.GetAutostart())
 
 			// Disable autostart.
 			mocks.Autostarter.EXPECT().IsEnabled().Return(true)

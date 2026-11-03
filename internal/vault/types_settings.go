@@ -22,6 +22,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/ProtonMail/proton-bridge/v3/internal/platform"
 	"github.com/ProtonMail/proton-bridge/v3/internal/updater"
 	"github.com/ProtonMail/proton-bridge/v3/internal/useragent"
 	"github.com/ProtonMail/proton-bridge/v3/pkg/ports"
@@ -90,7 +91,7 @@ func newDefaultSettings(gluonDir string) Settings {
 		ColorScheme:       "",
 		ProxyAllowed:      false,
 		ShowAllMail:       true,
-		Autostart:         true,
+		Autostart:         defaultAutostart(),
 		AutoUpdate:        true,
 		TelemetryDisabled: false,
 
@@ -106,4 +107,11 @@ func newDefaultSettings(gluonDir string) Settings {
 
 		PasswordArchive: PasswordArchive{},
 	}
+}
+
+// defaultAutostart is whether a new vault opens Bridge at login. air/OS
+// installs Bridge with the system, so it stays off there until the user turns
+// "Open on startup" on in Settings.
+func defaultAutostart() bool {
+	return runtime.GOOS != platform.HAIKU
 }

@@ -19,10 +19,12 @@ package vault_test
 
 import (
 	"math"
+	"runtime"
 	"testing"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/ProtonMail/gluon/async"
+	"github.com/ProtonMail/proton-bridge/v3/internal/platform"
 	"github.com/ProtonMail/proton-bridge/v3/internal/updater"
 	"github.com/ProtonMail/proton-bridge/v3/internal/useragent"
 	"github.com/ProtonMail/proton-bridge/v3/internal/vault"
@@ -173,8 +175,9 @@ func TestVault_Settings_Autostart(t *testing.T) {
 	// create a new test vault.
 	s := newVault(t)
 
-	// Check the default autostart setting.
-	require.Equal(t, true, s.GetAutostart())
+	// Check the default autostart setting: off on air/OS, where Bridge is
+	// installed with the system.
+	require.Equal(t, runtime.GOOS != platform.HAIKU, s.GetAutostart())
 
 	// Modify the autostart setting.
 	require.NoError(t, s.SetAutostart(false))

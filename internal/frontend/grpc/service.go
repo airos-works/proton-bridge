@@ -207,7 +207,10 @@ func NewService(
 func (s *Service) initAutostart() {
 	s.firstTimeAutostart.Do(func() {
 		shouldAutostartBeOn := s.bridge.GetAutostart()
-		if s.bridge.GetFirstStart() || shouldAutostartBeOn {
+		// air/OS ships Bridge in every install: start at login only when
+		// the user asked for it, not on every first start.
+		firstStart := s.bridge.GetFirstStart() && runtime.GOOS != platform.HAIKU
+		if firstStart || shouldAutostartBeOn {
 			if err := s.bridge.SetAutostart(true); err != nil {
 				s.log.WithField("prefs", shouldAutostartBeOn).WithError(err).Error("Failed to enable first autostart")
 			}

@@ -31,7 +31,12 @@ Implemented so far:
   replace a missing key when an encrypted vault already exists.
 - Native settings/data/cache directories through `find_directory`.
 - Cross-build environment and dependency adaptations for Haiku.
-- Native system/memory information and boot-launch autostart links.
+- Native system/memory information and boot-launch autostart links. Because
+  Bridge comes with every install, it does not start at login by default on
+  air/OS (upstream turns this on at first start); the user turns it on or off
+  with **Settings → Open on startup**, which adds or removes the
+  `~/config/settings/boot/launch/Proton Mail Bridge` link. Vaults created
+  before this change keep the setting they had.
 - Package-manager-owned updates, with no Proton binary update feed.
 - Working CLI and local IMAP/SMTP services.
 
